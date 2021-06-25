@@ -1,9 +1,10 @@
 from functools import wraps
+import utils
 
 ############################### 1
 def check_docstring_len(fn):
     """
-    Accepts a function and checks if the length of the 
+    Accepts a function and checks if the length of the
     docstring is greater than 50
     """
     from inspect import getdoc
@@ -13,16 +14,19 @@ def check_docstring_len(fn):
     @wraps(fn)
     def inner():
         nonlocal limit
-        fn_docstr = getdoc(fn)
-        if fn_docstr is None:
+        if not hasattr(fn, "__call__"):
             return False
-        len_docstring = len(fn_docstr)
-        if len_docstring > limit:
-            print(f"the docstring for {fn.__name__} is greater than {limit}")
-            return True
         else:
-            print(f"the docstring for {fn.__name__} is lesser than {limit}")
-            return False
+            fn_docstr = getdoc(fn)
+            if fn_docstr is None:
+                return False
+            len_docstring = len(fn_docstr)
+            if len_docstring > limit:
+                print(f"the docstring for {fn.__name__} is greater than {limit}")
+                return True
+            else:
+                print(f"the docstring for {fn.__name__} is lesser than {limit}")
+                return False
 
     return inner
 
@@ -52,7 +56,7 @@ counters = {}
 
 def counter(fn):
     """
-    A simple counter that keeps track of how many times 
+    A simple counter that keeps track of how many times
     a function has been run.
     """
 
@@ -74,11 +78,15 @@ def counter(fn):
 
 def counter_with_diff_dict(fn, counter_dict):
     """
-    A simple counter that accepts a fn and a dict, 
+    A simple counter that accepts a fn and a dict,
     and stores the number of times the fn has been called
     in that dict
 
     """
+    if not hasattr(fn, "__call__"):
+        raise utils.NoFunctionException("pass a valid function")
+    if not isinstance(counter_dict, dict):
+        raise utils.CustomCounterException("counter_dict should be a dictionary")
 
     @wraps(fn)
     def inner(*args, **kwargs):
